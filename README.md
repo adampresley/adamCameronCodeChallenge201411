@@ -26,6 +26,10 @@ If you have Go installed and configured execute the following from PowerShell in
 go test ./... -v
 ```
 
+Here is a screenshot of the tests passing using the GoConvey web interface.
+
+![Screenshot of GoConvey Tests](images/adamcameronchallenge20141107-screenshot.png)
+
 ### Additional Nerdy Information
 * This solution runs the summing of array slices in parallel using goroutines
 * This means you *could possibly* change the code to use multiple processors, and pass it an obscene number of integers to process, and it might be pretty fast
