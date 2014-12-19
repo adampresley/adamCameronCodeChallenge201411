@@ -6,10 +6,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/adampresley/adamCameronCodeChallenge201411/scheduler"
-	"github.com/adampresley/adamCameronCodeChallenge201411/subarray"
 )
+
+type SubArrayResult struct {
+	Sequence []int
+	Total    int
+}
 
 var input = flag.String("input", "", "Comma delimited list of integer numbers")
 var threshold = flag.Int("threshold", 10, "Integer number for array slice to not exceed")
@@ -23,6 +25,15 @@ func main() {
 	 */
 	inputArray := make([]int, 0)
 
+	if *input == "" {
+		fmt.Println("Please provide a valid input of comma delimited integers")
+		os.Exit(1)
+	}
+
+	/*
+	 * Get the input from the console args, and split them up
+	 * into integers in an array
+	 */
 	for _, value := range strings.Split(*input, ",") {
 		i, err := strconv.Atoi(value)
 		if err != nil {
@@ -34,14 +45,59 @@ func main() {
 	}
 
 	/*
-	 * Use the GetSliceCounts() method to get all possible
-	 * sequence slices. This is done using goroutines (in parallel).
-	 * The result is then passed to GetLongestSequence to figure
-	 * out which one wins.
+	 * Loop, slice, sum
 	 */
-	subseriesResults := scheduler.GetSliceCounts(inputArray, *threshold)
-	subseries := subarray.GetLongestSequence(subseriesResults)
+	sequences := make([]SubArrayResult, 0)
 
-	fmt.Println("")
-	fmt.Println("Sequence", subseries.Sequence, "wins with a length of", len(subseries.Sequence), " for a total of", subseries.Total)
+	for index, _ := range inputArray {
+		sequence := make([]int, 0)
+		total := 0
+
+		inputSlice := inputArray[index:]
+
+		for _, value := range inputSlice {
+			if (total + value) <= *threshold {
+				total += value
+				sequence = append(sequence, value)
+			} else {
+				break
+			}
+		}
+
+		if len(sequence) > 0 {
+			result := SubArrayResult{
+				sequence,
+				total,
+			}
+
+			sequences = append(sequences, result)
+		}
+	}
+
+	/*
+	 * Who wins?
+	 */
+	longestIndex := 0
+	longestLength := 0
+
+	for index, item := range sequences {
+		if len(item.Sequence) > longestLength {
+			longestLength = len(item.Sequence)
+			longestIndex = index
+		}
+
+		if len(item.Sequence) == longestLength && item.Total > sequences[longestIndex].Total {
+			longestLength = len(item.Sequence)
+			longestIndex = index
+		}
+	}
+
+	if len(sequences) > 0 {
+		winningSequence := sequences[longestIndex]
+
+		fmt.Println("")
+		fmt.Println("Sequence", winningSequence.Sequence, "wins with a length of", len(winningSequence.Sequence), " for a total of", winningSequence.Total)
+	} else {
+		fmt.Println("No winners :(")
+	}
 }
